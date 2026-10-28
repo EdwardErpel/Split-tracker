@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f6f5c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Hantel-Split">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Hantel-Split</title>
+<style>
+:root{--bg:#eef1f4;--card:#fff;--ink:#17202b;--mute:#6a7686;--line:#d9dfe6;--acc:#1f6f5c;--accfg:#fff;--done:#dff3ec;
+color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10161d;--card:#1a232d;--ink:#e8edf2;--mute:#8d9aa9;--line:#2b3744;--acc:#4fc3a1;--accfg:#08231c;--done:#17352d;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10161d;--card:#1a232d;--ink:#e8edf2;--mute:#8d9aa9;--line:#2b3744;--acc:#4fc3a1;--accfg:#08231c;--done:#17352d;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 "Avenir Next",system-ui,-apple-system,"Segoe UI",sans-serif;max-width:560px;margin:0 auto;padding:0 14px 90px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+header{padding:18px 2px 8px}
+h1{font-size:26px;margin:0;letter-spacing:-.4px}
+.bk{display:flex;gap:8px;margin-top:10px}.bk button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 12px;font:inherit;font-size:13px;cursor:pointer}
+.sub{color:var(--mute);font-size:14px;margin-top:2px}
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px 0 10px}
+.tab{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:10px 2px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;line-height:1.2}
+.tab small{display:block;font-weight:400;color:var(--mute);font-size:11px}
+.tab.on{background:var(--acc);color:var(--accfg);border-color:var(--acc)}
+.tab.on small{color:var(--accfg);opacity:.8}
+.tab.next:not(.on){border-color:var(--acc)}
+.ex{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:0 0 12px}
+.ex h2{font-size:17px;margin:0}
+.meta{color:var(--mute);font-size:13px;margin:2px 0 10px}
+.ss{display:inline-block;margin-left:6px;font-size:12px;color:var(--acc);font-weight:600}
+.row{display:grid;grid-template-columns:28px 1fr 1fr 44px;gap:8px;align-items:center;margin-top:6px;padding:4px;border-radius:12px}
+.row.d{background:var(--done)}
+.n{color:var(--mute);font-weight:600;text-align:center}
+input[type=number]{width:100%;height:44px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:17px;padding:0 10px;text-align:center}
+input[type=number]:focus-visible,button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.chk{width:44px;height:44px;border-radius:12px;border:2px solid var(--line);background:transparent;color:var(--accfg);font-size:22px;cursor:pointer;padding:0}
+.row.d .chk{background:var(--acc);border-color:var(--acc)}
+.last{color:var(--mute);font-size:12px;margin:8px 0 0}
+.lbl{display:grid;grid-template-columns:28px 1fr 1fr 44px;gap:8px;color:var(--mute);font-size:12px;text-align:center;padding:0 4px}
+.bar{position:fixed;left:0;right:0;bottom:0;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line)}
+.fin{display:block;width:100%;max-width:560px;margin:0 auto;height:50px;border:0;border-radius:14px;background:var(--acc);color:var(--accfg);font:inherit;font-size:17px;font-weight:700;cursor:pointer}
+.prog{height:4px;background:var(--line);border-radius:2px;margin:0 0 12px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--acc);width:0;transition:width .2s}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header><h1>Hantel-Split</h1><div class="sub" id="sub"></div><div class="bk"><button id="exp">Sichern</button><button id="imp">Wiederherstellen</button></div></header>
+<nav class="tabs" id="tabs"></nav>
+<div class="prog"><i id="pb"></i></div>
+<main id="main"></main>
+<div class="bar"><button class="fin" id="fin">Einheit abschließen</button></div>
+<div class="toast" id="toast"></div>
+<script>
+const S=[
+{id:"oka",t:"OK A",s:"Druck",ex:[
+["Floor Press",4,"6-10"],["Einarmiges Rudern",4,"8-12"],["Schulterdrücken stehend",3,"8-12"],["Vorgebeugtes Rudern",3,"10-12"],
+["Seitheben",3,"12-20",1],["Überkopf-Trizepsstrecken",3,"10-15"],["Hammer Curls",2,"10-12"]]},
+{id:"uka",t:"UK A",s:"Quad",ex:[
+["Goblet Squat / Frontkniebeuge",4,"8-12"],["Bulgarian Split Squat",3,"8-12 pro Bein"],["Rumänisches Kreuzheben",3,"8-12"],
+["Step-ups",2,"10 pro Bein"],["Einbeiniges Wadenheben",4,"12-20"],["Hantel-Crunches",3,"12-15"]]},
+{id:"okb",t:"OK B",s:"Zug",ex:[
+["Einarmiges Rudern schwer",4,"6-10"],["Liegestütze",3,"8-12"],["Pullover am Boden",3,"10-15"],["Arnold Press",3,"8-12"],
+["Reverse Flys",3,"12-20"],["Bizeps Curls",3,"10-12",1],["Liegende Trizepsstrecken",3,"10-12"]]},
+{id:"ukb",t:"UK B",s:"Hüfte",ex:[
+["Rumänisches Kreuzheben schwer",4,"6-10"],["Glute Bridge",4,"8-12"],["Reverse Lunges",3,"8-12 pro Bein"],
+["Sumo Squat (3 Sek. runter)",3,"10-15"],["Einbeiniges RDL",2,"10 pro Bein"],["Wadenheben",3,"12-20"],["Russian Twists",3,"12-20"]]}];
+let st={next:0,count:0,lastDate:"",last:{},cur:{}};
+let view=0;
+const $=id=>document.getElementById(id);
+const KEY="hantel-split-v1";
+try{const r=localStorage.getItem(KEY);if(r)st=Object.assign(st,JSON.parse(r))}catch(e){}
+view=st.next;
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}
+}
+function sets(si,ei){
+  const s=S[si],k=s.id;st.cur[k]=st.cur[k]||{};
+  if(!st.cur[k][ei]){
+    const l=st.last[k+ei]||[];
+    st.cur[k][ei]=Array.from({length:s.ex[ei][1]},(_,i)=>({kg:l[i]?l[i].kg:(l.length?l[l.length-1].kg:""),reps:"",done:false}));
+  }
+  return st.cur[k][ei];
+}
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),1800)}
+function progress(){
+  let d=0,n=0;S[view].ex.forEach((e,ei)=>sets(view,ei).forEach(x=>{n++;if(x.done)d++}));
+  $("pb").style.width=(n?d/n*100:0)+"%";
+}
+function render(){
+  $("sub").textContent=st.count?`${st.count} Einheiten geschafft`+(st.lastDate?`, zuletzt ${st.lastDate}`:""):"Noch keine Einheit abgeschlossen";
+  $("tabs").innerHTML=S.map((s,i)=>`<button class="tab${i==view?" on":""}${i==st.next?" next":""}" data-i="${i}">${s.t}<small>${i==st.next?"als Nächstes":s.s}</small></button>`).join("");
+  const k=S[view].id;
+  $("main").innerHTML=S[view].ex.map((e,ei)=>{
+    const ss=sets(view,ei),l=st.last[k+ei];
+    const lt=l&&l.length?"Letztes Mal: "+l.map(x=>(x.kg||"–")+" kg × "+(x.reps||"–")).join(", "):"Noch keine Werte vom letzten Training";
+    return `<section class="ex"><h2>${e[0]}${e[3]?'<span class="ss">Superset mit nächster</span>':""}</h2>
+<div class="meta">${e[1]} Sätze × ${e[2]} Wdh.</div>
+<div class="lbl"><span></span><span>kg</span><span>Wdh.</span><span></span></div>
+${ss.map((x,si)=>`<div class="row${x.done?" d":""}"><span class="n">${si+1}</span>
+<input type="number" inputmode="decimal" step="0.5" min="0" placeholder="kg" value="${x.kg}" data-e="${ei}" data-s="${si}" data-f="kg" aria-label="Gewicht Satz ${si+1}">
+<input type="number" inputmode="numeric" min="0" placeholder="Wdh." value="${x.reps}" data-e="${ei}" data-s="${si}" data-f="reps" aria-label="Wiederholungen Satz ${si+1}">
+<button class="chk" data-e="${ei}" data-s="${si}" aria-label="Satz ${si+1} erledigt">${x.done?"✓":""}</button></div>`).join("")}
+<p class="last">${lt}</p></section>`}).join("");
+  progress();
+}
+$("tabs").addEventListener("click",e=>{const b=e.target.closest(".tab");if(!b)return;view=+b.dataset.i;render();scrollTo(0,0)});
+$("main").addEventListener("input",e=>{
+  const t=e.target;if(t.tagName!=="INPUT")return;
+  sets(view,+t.dataset.e)[+t.dataset.s][t.dataset.f]=t.value;save();
+});
+$("main").addEventListener("click",e=>{
+  const b=e.target.closest(".chk");if(!b)return;
+  const x=sets(view,+b.dataset.e)[+b.dataset.s];x.done=!x.done;
+  b.textContent=x.done?"✓":"";b.parentElement.classList.toggle("d",x.done);
+  save();progress();
+});
+$("fin").addEventListener("click",()=>{
+  const k=S[view].id;let any=false;
+  S[view].ex.forEach((e,ei)=>{
+    const ss=sets(view,ei);
+    if(ss.some(x=>x.done))any=true;
+    const keep=ss.filter(x=>x.done||x.kg!==""||x.reps!=="");
+    if(keep.length)st.last[k+ei]=keep.map(x=>({kg:x.kg,reps:x.reps}));
+  });
+  if(!any){toast("Hak zuerst mindestens einen Satz ab");return}
+  st.cur[k]={};st.count++;
+  st.lastDate=new Date().toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit"});
+  st.next=(view+1)%4;view=st.next;save();render();scrollTo(0,0);
+  toast("Gespeichert. Weiter mit "+S[view].t);
+});
+render();
+$("exp").addEventListener("click",async()=>{
+  const j=JSON.stringify(st);
+  try{await navigator.clipboard.writeText(j);toast("Backup in die Zwischenablage kopiert")}
+  catch(e){prompt("Backup kopieren:",j)}
+});
+$("imp").addEventListener("click",()=>{
+  const j=prompt("Backup hier einfügen:");if(!j)return;
+  try{const d=JSON.parse(j);if(typeof d!=="object"||!d.last)throw 0;st=Object.assign({next:0,count:0,lastDate:"",last:{},cur:{}},d);view=st.next;save();render();toast("Backup wiederhergestellt")}
+  catch(e){toast("Das ist kein gültiges Backup")}
+});
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))}
+</script>
+</body>
+</html>
